@@ -1,86 +1,66 @@
-/* DN3008 Generative Art, Ashley Hi 2026
- * Week 9 - Fractals & Recursion
- * 01: NESTED WORLDS – starter code
- * Recursive Function: A circle that draws smaller copies of itself.
- * Work through the steps in order.
- 
- * STEP 1   Run the sketch. drawRings() draws one circle. Read it carefully.
- 
- * STEP 2   Make it recursive. At the bottom of drawRings(), call drawRings()
-            again with the same centre, a radius of r * 0.75 and depth - 1.
-            Add a BASE CASE at the top of the function body:
-            if (depth === 0) return;
-            Try removing the base case for a second to see why it matters
-            (save first! the tab may freeze).
-            
- * STEP 3   Branch. Replace the single call with TWO calls: one child to the
-            left, one to the right. Each child has radius r * 0.5 and sits
-            against the inside edge of its parent:
-                const childR = r * 0.5;
-                const offset = r - childR;
-                drawRings(x - offset, y, childR, depth - 1);
-                drawRings(x + offset, y, childR, depth - 1);
-            Now try FOUR children: left, right, up, down. Use a for loop and
-            cos()/sin() with angles i * HALF_PI.
-          
-* STEP 4    Colour by depth. Pass the starting depth in as a parameter (call it
-            `top`) so you can work out level = top - depth. Use map() on level
-            to set hue, alpha and strokeWeight. Thick and bright outside,
-            thin and faint inside usually looks best. Try blendMode(ADD) in
-            draw() for a glow.
-            
-* STEP 5    Bring it to life.
-              a)  Replace 0.5 with a `ratio` parameter driven by
-                 map(sin(frameCount * 0.01), -1, 1, 0.42, 0.55).
-              b) Add an angle offset that grows with frameCount so each level rotates; make deeper levels turn faster.
-              c) Map mouseY to the depth (between 2 and 6). Watch the frame rate: four children at depth 6 is already 5,461 circles per frame.
-*/
+/*
+ * Teal-to-rose rings, 2.2-0.45 px strokes, and a 0.43-0.48 radius ratio.
+ * Slower breathing and rotation keep the geometry delicate and quietly shifting.
+ * Based on Ashley Hi's Nested Worlds, DN3008 Generative Art, 2026.
+ */
 
-let mouseTouched =  false;
-function mouseMoved(){ mouseTouched = true;}
+let mouseTouched = false;
 
 function setup() {
   createCanvas(800, 800);
+  pixelDensity(1);
   colorMode(HSB, 360, 100, 100, 100);
   noFill();
-  let r = 10;
-  let ratio = 0.7;
-  let spin = 2;
-  let depth = 5;
-  
-  
 }
 
 function draw() {
-  background(235, 70, 7);
-  let ratio = map(sin(frameCount * 0.01), -1, 1, 0.42, 0.55);
-  if (mouseIsPressed) ratio = map(mouseX, 0, width, 0.3, 0.2, true);
+  background(205, 35, 6);
 
-  const depth = mouseTouched ? floor(map(mouseY, 0, height, 2, 6, true)) : 5;
-  drawRings(width / 2, height / 2, 340, depth, depth, ratio, 0);
-}
-
-function drawRings(x, y, r, depth, top, ratio, spin) {
-  const level = top - depth;
-  const hue = (map(level, 0, top, 200, 340) + frameCount * 0.2) % 360;
-  stroke(hue, 65, 95,map(level, 0, top, 75, 95));
-
-  strokeWeight(12);
-  circle(x, y, r * 2);
-
-  // STEP 2: base case + recursive call go here
-  if (depth === 0 || r < 2) return;
-
-  const childR = r * ratio;
-  const offset = r- childR;
-  const turn = spin + frameCount * 0.00155; 
-  for (let i = 0; i<4; i++){
-    const a = turn + i *HALF_PI;
-    drawRings(x+offset, y+offset, childR, depth - 1, top, ratio, turn);
+  let ratio = map(sin(frameCount * 0.004), -1, 1, 0.43, 0.48);
+  if (mouseIsPressed) {
+    ratio = map(mouseX, 0, width, 0.32, 0.48, true);
   }
 
+  const depth = mouseTouched ? floor(map(mouseY, 0, height, 2, 6, true)) : 5;
+  drawRings(width / 2, height / 2, 330, depth, depth, ratio, 0);
+}
+
+function drawRings(x, y, radius, depth, top, ratio, spin) {
+  const level = top - depth;
+  const hue = map(level, 0, top, 178, 338) + sin(frameCount * 0.002) * 4;
+
+  stroke(hue, 32, 86, map(level, 0, top, 72, 38));
+  strokeWeight(map(level, 0, top, 2.2, 0.45));
+  circle(x, y, radius * 2);
+
+  if (depth === 0 || radius < 2) {
+    return;
+  }
+
+  const childRadius = radius * ratio;
+  const offset = radius - childRadius;
+  const turn = spin + frameCount * 0.00045;
+
+  for (let i = 0; i < 4; i++) {
+    const angle = turn + i * HALF_PI;
+    drawRings(
+      x + cos(angle) * offset,
+      y + sin(angle) * offset,
+      childRadius,
+      depth - 1,
+      top,
+      ratio,
+      turn
+    );
+  }
+}
+
+function mouseMoved() {
+  mouseTouched = true;
 }
 
 function keyPressed() {
-  if (key === "s" || key === "S") saveCanvas("nested-worlds", "png");
+  if (key === "s" || key === "S") {
+    saveCanvas("quiet-orbits", "png");
+  }
 }

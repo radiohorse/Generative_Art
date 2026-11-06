@@ -1,6 +1,5 @@
-/* DN3008 Generative Art, Ashley Hi 2026
+/* DN3008 Generative Art, Modified by Yandong Li, 2026
  * Week 6 - Autonomous Agents
- * Boids
  */
 
 let flock;
@@ -8,7 +7,7 @@ let flock;
 function setup() {
   createCanvas(1000, 1000); // *** change artwork size here
 
-  background(245, 245, 245); // *** change background colour here
+  background(245, 245, 245); 
 
   // Add an initial set of boids into the system.
   flock = new Flock();
